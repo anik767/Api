@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { login } from '@/lib/api';
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -40,14 +41,23 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      const response = await login({ email, password });
-      
-      // Save token to localStorage AND cookie
-      localStorage.setItem('token', response.token || '');
-      localStorage.setItem('user', JSON.stringify(response.user));
-      
-      // Save to cookie for middleware
-      document.cookie = `token=${response.token}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 days
+      const response = await fetch(`${API_URL}/api/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ email, password })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed');
+      }
+
+      // Save token
+      if (data.token) {
+        localStorage.setItem('auth_token', data.token);
+        document.cookie = `token=${data.token}; path=/; max-age=${60 * 60 * 24 * 7}`; // 7 days
+      }
       
       // Handle remember me functionality
       if (rememberMe) {
@@ -59,6 +69,10 @@ export default function LoginPage() {
         setTimeout(() => {
           setShowCredentialsSavedMessage(false);
         }, 3000);
+      } else {
+        // Clear saved credentials if not remembering
+        localStorage.removeItem('rememberedEmail');
+        localStorage.removeItem('rememberedPassword');
       }
       
       // Redirect to admin or home

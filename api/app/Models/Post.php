@@ -10,13 +10,13 @@ class Post extends Model
     protected $fillable = [
         'title',
         'content',
+        'image',
+        'category_id',
         'user_id',
-        'status',
         'published_at'
     ];
 
     protected $casts = [
-        'status' => 'boolean',
         'published_at' => 'datetime',
     ];
 
@@ -26,5 +26,13 @@ class Post extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the category that the post belongs to.
+     */
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 }

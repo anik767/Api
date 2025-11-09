@@ -19,8 +19,8 @@ class AuthController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"email","password"},
-     *             @OA\Property(property="email", type="string", format="email", example="test@gmail.com"),
-     *             @OA\Property(property="password", type="string", format="password", example="12345678")
+     *             @OA\Property(property="email", type="string", format="email", example="admin@gmail.com"),
+     *             @OA\Property(property="password", type="string", format="password", example="admin123")
      *         )
      *     ),
      *     @OA\Response(
@@ -90,9 +90,10 @@ class AuthController extends Controller
     /**
      * @OA\Post(
      *     path="/api/register",
-     *     summary="Register new user",
-     *     description="Create a new user account and return access token",
+     *     summary="Register new user (Admin Only)",
+     *     description="Create a new user account. Only accessible by admin users.",
      *     tags={"Auth"},
+     *     security={{"sanctum":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
@@ -118,6 +119,22 @@ class AuthController extends Controller
      *                 @OA\Property(property="updated_at", type="string", format="date-time")
      *             ),
      *             @OA\Property(property="token", type="string", example="2|abcdef1234567890")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthenticated.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Forbidden - Admin access required",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="success", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthorized. Admin access required.")
      *         )
      *     ),
      *     @OA\Response(

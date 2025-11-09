@@ -2,11 +2,11 @@
     "openapi": "3.0.0",
     "info": {
         "title": "API",
-        "description": "Complete API for user management.",
+        "description": "Complete REST API for managing blog posts and user authentication. Built with Laravel and Sanctum authentication.",
         "contact": {
-            "name": "Anik",
-            "url": "https://yourwebsite.com",
-            "email": "your.email@company.com"
+            "name": "API Support",
+            "url": "https://admin.com",
+            "email": "admin@gmail.com"
         },
         "license": {
             "name": "MIT",
@@ -17,11 +17,11 @@
     "servers": [
         {
             "url": "http://localhost:8000",
-            "description": "Development server"
+            "description": "Local Development Server"
         },
         {
             "url": "https://api.yourdomain.com",
-            "description": "Production server"
+            "description": "Production Server"
         }
     ],
     "paths": {
@@ -46,12 +46,12 @@
                                     "email": {
                                         "type": "string",
                                         "format": "email",
-                                        "example": "test@gmail.com"
+                                        "example": "admin@gmail.com"
                                     },
                                     "password": {
                                         "type": "string",
                                         "format": "password",
-                                        "example": "12345678"
+                                        "example": "admin123"
                                     }
                                 },
                                 "type": "object"
@@ -175,8 +175,8 @@
                 "tags": [
                     "Auth"
                 ],
-                "summary": "Register new user",
-                "description": "Create a new user account and return access token",
+                "summary": "Register new user (Admin Only)",
+                "description": "Create a new user account. Only accessible by admin users.",
                 "operationId": "8a56853624e025573120a09a4c75d468",
                 "requestBody": {
                     "required": true,
@@ -270,6 +270,46 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Forbidden - Admin access required",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthorized. Admin access required."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
                     "422": {
                         "description": "Validation error",
                         "content": {
@@ -309,7 +349,12 @@
                             }
                         }
                     }
-                }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
             }
         },
         "/api/logout": {
@@ -365,39 +410,17 @@
                 ]
             }
         },
-        "/api/posts": {
+        "/api/categories": {
             "get": {
                 "tags": [
-                    "Posts"
+                    "Categories"
                 ],
-                "summary": "Get all posts",
-                "description": "Retrieve a list of all posts",
-                "operationId": "e9eaf7df702a94f4443677bd1a36cfe6",
-                "parameters": [
-                    {
-                        "name": "page",
-                        "in": "query",
-                        "description": "Page number",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "example": 1
-                        }
-                    },
-                    {
-                        "name": "per_page",
-                        "in": "query",
-                        "description": "Number of posts per page",
-                        "required": false,
-                        "schema": {
-                            "type": "integer",
-                            "example": 10
-                        }
-                    }
-                ],
+                "summary": "Get all categories",
+                "description": "Retrieve a list of all categories",
+                "operationId": "3f5817a34833d0a1f4af4548dd3aeaba",
                 "responses": {
                     "200": {
-                        "description": "Posts retrieved successfully",
+                        "description": "Categories retrieved successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -414,38 +437,18 @@
                                                         "type": "integer",
                                                         "example": 1
                                                     },
-                                                    "title": {
+                                                    "name": {
                                                         "type": "string",
-                                                        "example": "Sample Post"
+                                                        "example": "Technology"
                                                     },
-                                                    "content": {
+                                                    "slug": {
                                                         "type": "string",
-                                                        "example": "This is a sample post content"
+                                                        "example": "technology"
                                                     },
-                                                    "status": {
+                                                    "description": {
                                                         "type": "string",
-                                                        "example": "published"
-                                                    },
-                                                    "published_at": {
-                                                        "type": "string",
-                                                        "format": "date-time"
-                                                    },
-                                                    "user": {
-                                                        "properties": {
-                                                            "id": {
-                                                                "type": "integer",
-                                                                "example": 1
-                                                            },
-                                                            "name": {
-                                                                "type": "string",
-                                                                "example": "John Doe"
-                                                            },
-                                                            "email": {
-                                                                "type": "string",
-                                                                "example": "john@example.com"
-                                                            }
-                                                        },
-                                                        "type": "object"
+                                                        "example": "All about technology",
+                                                        "nullable": true
                                                     },
                                                     "created_at": {
                                                         "type": "string",
@@ -469,32 +472,29 @@
             },
             "post": {
                 "tags": [
-                    "Posts"
+                    "Categories"
                 ],
-                "summary": "Create a new post",
-                "description": "Create a new blog post",
-                "operationId": "4a657e51a0066c64781851f2fd2651e2",
+                "summary": "Create a new category",
+                "description": "Create a new category. Requires authentication.",
+                "operationId": "71fcad552bb0eaba9fb191fd8d8dcab0",
                 "requestBody": {
                     "required": true,
                     "content": {
                         "application/json": {
                             "schema": {
                                 "required": [
-                                    "title",
-                                    "content"
+                                    "name"
                                 ],
                                 "properties": {
-                                    "title": {
+                                    "name": {
+                                        "description": "Category name (required)",
                                         "type": "string",
-                                        "example": "My First Post"
+                                        "example": "Technology"
                                     },
-                                    "content": {
+                                    "description": {
+                                        "description": "Category description (optional)",
                                         "type": "string",
-                                        "example": "This is the content of my first post"
-                                    },
-                                    "status": {
-                                        "type": "boolean",
-                                        "example": true
+                                        "example": "All about technology"
                                     }
                                 },
                                 "type": "object"
@@ -504,7 +504,7 @@
                 },
                 "responses": {
                     "201": {
-                        "description": "Post created successfully",
+                        "description": "Category created successfully",
                         "content": {
                             "application/json": {
                                 "schema": {
@@ -515,7 +515,7 @@
                                         },
                                         "message": {
                                             "type": "string",
-                                            "example": "Post created successfully"
+                                            "example": "Category created successfully"
                                         },
                                         "data": {
                                             "properties": {
@@ -523,26 +523,17 @@
                                                     "type": "integer",
                                                     "example": 1
                                                 },
-                                                "title": {
+                                                "name": {
                                                     "type": "string",
-                                                    "example": "My First Post"
+                                                    "example": "Technology"
                                                 },
-                                                "content": {
+                                                "slug": {
                                                     "type": "string",
-                                                    "example": "This is the content of my first post"
+                                                    "example": "technology"
                                                 },
-                                                "status": {
-                                                    "type": "boolean",
-                                                    "example": "true"
-                                                },
-                                                "user_id": {
-                                                    "type": "integer",
-                                                    "example": 1
-                                                },
-                                                "published_at": {
+                                                "description": {
                                                     "type": "string",
-                                                    "format": "date-time",
-                                                    "nullable": true
+                                                    "example": "All about technology"
                                                 },
                                                 "created_at": {
                                                     "type": "string",
@@ -588,17 +579,604 @@
                                             "example": "The given data was invalid."
                                         },
                                         "errors": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/categories/{id}": {
+            "get": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Get a specific category",
+                "description": "Retrieve a single category by its ID",
+                "operationId": "c68e76d323c008827a9e47398b1583de",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "example": "Technology"
+                                                },
+                                                "slug": {
+                                                    "type": "string",
+                                                    "example": "technology"
+                                                },
+                                                "description": {
+                                                    "type": "string",
+                                                    "example": "All about technology"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Update a category",
+                "description": "Update an existing category. Requires authentication.",
+                "operationId": "0e686b2748211cc688333ed705dc111f",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "name": {
+                                        "description": "Category name (optional)",
+                                        "type": "string",
+                                        "example": "Updated Technology"
+                                    },
+                                    "description": {
+                                        "description": "Category description (optional)",
+                                        "type": "string",
+                                        "example": "Updated description"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Category updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category updated successfully"
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Categories"
+                ],
+                "summary": "Delete a category",
+                "description": "Delete a category by ID. Requires authentication.",
+                "operationId": "4c12e22a7f8c617bd83bfa1fdc05428d",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Category ID",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Category deleted successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category deleted successfully"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Category not found",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Category not found"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
+        "/api/posts": {
+            "get": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Get all posts",
+                "description": "Retrieve a paginated list of all blog posts with author information",
+                "operationId": "ef5a1d6f52f42f2bee93544d302e5e55",
+                "parameters": [
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "description": "Page number for pagination",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "description": "Number of posts per page (default: 10)",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "example": 10
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Posts retrieved successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "title": {
+                                                        "type": "string",
+                                                        "example": "My First Blog Post"
+                                                    },
+                                                    "content": {
+                                                        "type": "string",
+                                                        "example": "This is the content of my first blog post"
+                                                    },
+                                                    "image": {
+                                                        "description": "Image path relative to storage/app/public",
+                                                        "type": "string",
+                                                        "example": "posts/abc123.jpg"
+                                                    },
+                                                    "category_id": {
+                                                        "type": "integer",
+                                                        "example": 1,
+                                                        "nullable": true
+                                                    },
+                                                    "user_id": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "published_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-11-05T12:00:00.000000Z"
+                                                    },
+                                                    "created_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-11-05T12:00:00.000000Z"
+                                                    },
+                                                    "updated_at": {
+                                                        "type": "string",
+                                                        "format": "date-time",
+                                                        "example": "2025-11-05T12:00:00.000000Z"
+                                                    },
+                                                    "user": {
+                                                        "properties": {
+                                                            "id": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "example": "John Doe"
+                                                            },
+                                                            "email": {
+                                                                "type": "string",
+                                                                "example": "john@example.com"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        },
+                                        "pagination": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "last_page": {
+                                                    "type": "integer",
+                                                    "example": 5
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 10
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 45
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Posts"
+                ],
+                "summary": "Create a new post",
+                "description": "Create a new blog post with image upload and optional category assignment. All posts are automatically published upon creation. Requires authentication with Sanctum token.",
+                "operationId": "d098ba04aa85b4f73dea7b2549d55916",
+                "requestBody": {
+                    "description": "Post data with image file",
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "title",
+                                    "content",
+                                    "image"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "description": "Post title (required, max 255 characters)",
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "example": "Building Modern Web Applications with Laravel and Next.js"
+                                    },
+                                    "content": {
+                                        "description": "Post content (required, supports long text)",
+                                        "type": "string",
+                                        "example": "In this comprehensive guide, we'll explore how to build full-stack web applications using Laravel for the backend API and Next.js for the frontend. We'll cover authentication, CRUD operations, image uploads, and more."
+                                    },
+                                    "image": {
+                                        "description": "Post featured image file (required, accepts: jpeg, jpg, png, gif, webp, max size: 2MB)",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "category_id": {
+                                        "description": "Category ID to assign this post to (optional, must exist in categories table)",
+                                        "type": "integer",
+                                        "example": 1
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Post created successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Post created successfully"
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "title": {
+                                                    "type": "string",
+                                                    "example": "My First Blog Post"
+                                                },
+                                                "content": {
+                                                    "type": "string",
+                                                    "example": "This is the content of my first blog post"
+                                                },
+                                                "image": {
+                                                    "type": "string",
+                                                    "example": "posts/abc123xyz.jpg"
+                                                },
+                                                "category_id": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "published_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T12:00:00.000000Z"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T12:00:00.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T12:00:00.000000Z"
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated - Missing or invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error - Invalid or missing required fields",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "The title field is required. (and 2 more errors)"
+                                        },
+                                        "errors": {
                                             "properties": {
                                                 "title": {
                                                     "type": "array",
                                                     "items": {
-                                                        "type": "string"
+                                                        "type": "string",
+                                                        "example": "The title field is required."
                                                     }
                                                 },
                                                 "content": {
                                                     "type": "array",
                                                     "items": {
-                                                        "type": "string"
+                                                        "type": "string",
+                                                        "example": "The content field is required."
+                                                    }
+                                                },
+                                                "image": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The image must be a file of type: jpeg, jpg, png, gif."
+                                                    }
+                                                },
+                                                "category_id": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The selected category id is invalid."
                                                     }
                                                 }
                                             },
@@ -624,8 +1202,8 @@
                     "Posts"
                 ],
                 "summary": "Get a specific post",
-                "description": "Retrieve a specific post by ID",
-                "operationId": "b0f9d92879218f68a376b6edc6467c67",
+                "description": "Retrieve a single blog post by its ID, including author information",
+                "operationId": "14a30ad4b43cdec1dbeb1227a3d96762",
                 "parameters": [
                     {
                         "name": "id",
@@ -657,21 +1235,42 @@
                                                 },
                                                 "title": {
                                                     "type": "string",
-                                                    "example": "Sample Post"
+                                                    "example": "My First Blog Post"
                                                 },
                                                 "content": {
                                                     "type": "string",
-                                                    "example": "This is a sample post content"
+                                                    "example": "This is the content of my first blog post"
                                                 },
-                                                "status": {
+                                                "image": {
                                                     "type": "string",
-                                                    "example": "published"
+                                                    "example": "posts/abc123.jpg"
+                                                },
+                                                "category_id": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 1
                                                 },
                                                 "published_at": {
                                                     "type": "string",
-                                                    "format": "date-time"
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T12:00:00.000000Z"
+                                                },
+                                                "created_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T12:00:00.000000Z"
+                                                },
+                                                "updated_at": {
+                                                    "type": "string",
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T12:00:00.000000Z"
                                                 },
                                                 "user": {
+                                                    "description": "Post author information",
                                                     "properties": {
                                                         "id": {
                                                             "type": "integer",
@@ -684,17 +1283,22 @@
                                                         "email": {
                                                             "type": "string",
                                                             "example": "john@example.com"
+                                                        },
+                                                        "email_verified_at": {
+                                                            "type": "string",
+                                                            "format": "date-time",
+                                                            "nullable": true
+                                                        },
+                                                        "created_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
+                                                        },
+                                                        "updated_at": {
+                                                            "type": "string",
+                                                            "format": "date-time"
                                                         }
                                                     },
                                                     "type": "object"
-                                                },
-                                                "created_at": {
-                                                    "type": "string",
-                                                    "format": "date-time"
-                                                },
-                                                "updated_at": {
-                                                    "type": "string",
-                                                    "format": "date-time"
                                                 }
                                             },
                                             "type": "object"
@@ -727,18 +1331,18 @@
                     }
                 }
             },
-            "put": {
+            "post": {
                 "tags": [
                     "Posts"
                 ],
                 "summary": "Update a post",
-                "description": "Update an existing post",
-                "operationId": "929614537d76a081a92170a41ed3bdb3",
+                "description": "Update an existing blog post. All fields are optional - only send the fields you want to update. Requires authentication.",
+                "operationId": "87d121da9b0bc5667647993177fb8df8",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Post ID",
+                        "description": "Post ID to update",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -747,22 +1351,37 @@
                     }
                 ],
                 "requestBody": {
+                    "description": "Fields to update (all optional)",
                     "required": true,
                     "content": {
-                        "application/json": {
+                        "multipart/form-data": {
                             "schema": {
                                 "properties": {
                                     "title": {
+                                        "description": "New post title (optional, max 255 characters)",
                                         "type": "string",
+                                        "maxLength": 255,
                                         "example": "Updated Post Title"
                                     },
                                     "content": {
+                                        "description": "New post content (optional)",
                                         "type": "string",
-                                        "example": "Updated post content"
+                                        "example": "Updated post content here"
                                     },
-                                    "status": {
-                                        "type": "boolean",
-                                        "example": true
+                                    "image": {
+                                        "description": "New post image (optional, jpeg/png/jpg/gif, max 2MB). Will replace existing image.",
+                                        "type": "string",
+                                        "format": "binary"
+                                    },
+                                    "category_id": {
+                                        "description": "Category ID (optional)",
+                                        "type": "integer",
+                                        "example": 1
+                                    },
+                                    "_method": {
+                                        "description": "HTTP method override - use 'PATCH' for proper RESTful update",
+                                        "type": "string",
+                                        "example": "PATCH"
                                     }
                                 },
                                 "type": "object"
@@ -799,24 +1418,52 @@
                                                     "type": "string",
                                                     "example": "Updated post content"
                                                 },
-                                                "status": {
+                                                "image": {
                                                     "type": "string",
-                                                    "example": "published"
+                                                    "example": "posts/xyz789.jpg"
+                                                },
+                                                "category_id": {
+                                                    "type": "integer",
+                                                    "example": 1,
+                                                    "nullable": true
+                                                },
+                                                "user_id": {
+                                                    "type": "integer",
+                                                    "example": 1
                                                 },
                                                 "published_at": {
                                                     "type": "string",
-                                                    "format": "date-time"
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T12:00:00.000000Z"
                                                 },
                                                 "created_at": {
                                                     "type": "string",
-                                                    "format": "date-time"
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T12:00:00.000000Z"
                                                 },
                                                 "updated_at": {
                                                     "type": "string",
-                                                    "format": "date-time"
+                                                    "format": "date-time",
+                                                    "example": "2025-11-05T13:30:00.000000Z"
                                                 }
                                             },
                                             "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated - Missing or invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
                                         }
                                     },
                                     "type": "object"
@@ -844,19 +1491,34 @@
                             }
                         }
                     },
-                    "403": {
-                        "description": "Forbidden",
+                    "422": {
+                        "description": "Validation error - Invalid field values",
                         "content": {
                             "application/json": {
                                 "schema": {
                                     "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
                                         "message": {
                                             "type": "string",
-                                            "example": "You can only update your own posts"
+                                            "example": "The given data was invalid."
+                                        },
+                                        "errors": {
+                                            "properties": {
+                                                "title": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The title must not exceed 255 characters."
+                                                    }
+                                                },
+                                                "image": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "type": "string",
+                                                        "example": "The image must be an image file."
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
                                         }
                                     },
                                     "type": "object"
@@ -876,13 +1538,13 @@
                     "Posts"
                 ],
                 "summary": "Delete a post",
-                "description": "Delete an existing post",
+                "description": "Permanently delete a blog post by ID. This action cannot be undone. Requires authentication.",
                 "operationId": "fad1726bd24cd459fc1525b67985df39",
                 "parameters": [
                     {
                         "name": "id",
                         "in": "path",
-                        "description": "Post ID",
+                        "description": "Post ID to delete",
                         "required": true,
                         "schema": {
                             "type": "integer",
@@ -911,6 +1573,22 @@
                             }
                         }
                     },
+                    "401": {
+                        "description": "Unauthenticated - Missing or invalid token",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Unauthenticated."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "description": "Post not found",
                         "content": {
@@ -924,26 +1602,6 @@
                                         "message": {
                                             "type": "string",
                                             "example": "Post not found"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "description": "Forbidden",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "success": {
-                                            "type": "boolean",
-                                            "example": false
-                                        },
-                                        "message": {
-                                            "type": "string",
-                                            "example": "You can only delete your own posts"
                                         }
                                     },
                                     "type": "object"
@@ -964,7 +1622,8 @@
         "securitySchemes": {
             "sanctum": {
                 "type": "http",
-                "bearerFormat": "JWT",
+                "description": "Enter your Bearer token in the format: Bearer {token}",
+                "bearerFormat": "Token",
                 "scheme": "bearer"
             }
         }
@@ -972,11 +1631,15 @@
     "tags": [
         {
             "name": "Auth",
-            "description": "Auth"
+            "description": "Authentication endpoints - Login, Register, Logout"
         },
         {
             "name": "Posts",
-            "description": "Posts"
+            "description": "Blog post management - CRUD operations for posts"
+        },
+        {
+            "name": "Categories",
+            "description": "Categories"
         }
     ]
 }
